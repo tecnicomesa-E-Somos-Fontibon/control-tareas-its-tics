@@ -1,0 +1,2487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulo de Asignación y Control de Tareas | ITS & TICS</title>
+  <style>
+    :root {
+      --c-dark: #281C19;
+      --c-teal-dark: #39645D;
+      --c-turquoise: #009890;
+      --c-lime: #8CB32A;
+      --c-lime-light: #eef6d8;
+      --c-turquoise-light: #e0f5f4;
+      --c-bg: #f3f6f5;
+      --c-card: #ffffff;
+      --c-border: #dce4e2;
+      --c-text: #1e2927;
+      --c-muted: #60726f;
+
+      --crit-baja-bg: #e8f5e9;
+      --crit-baja-txt: #2e7d32;
+      --crit-media-bg: #fff8e1;
+      --crit-media-txt: #f57f17;
+      --crit-alta-bg: #fff3e0;
+      --crit-alta-txt: #e65100;
+      --crit-critica-bg: #ffebee;
+      --crit-critica-txt: #c62828;
+
+      --radius: 10px;
+      --shadow: 0 4px 14px rgba(40, 28, 25, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CABECERA CORPORATIVA */
+    header {
+      background: linear-gradient(135deg, var(--c-dark) 0%, var(--c-teal-dark) 100%);
+      color: #fff;
+      padding: 16px 28px;
+      border-bottom: 5px solid var(--c-lime);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-badge {
+      background: var(--c-lime);
+      color: var(--c-dark);
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .brand-title h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-title p {
+      font-size: 0.82rem;
+      color: #cfe3df;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* PÍLDORA ESTADO NUBE */
+    .sync-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9e9e9e;
+    }
+    .sync-dot.online { background: #8CB32A; box-shadow: 0 0 6px #8CB32A; }
+    .sync-dot.syncing { background: #00e5ff; animation: blinkSync 0.8s infinite; }
+    .sync-dot.error { background: #ff5252; }
+
+    @keyframes blinkSync {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* BOTONES */
+    .btn {
+      border: none;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-lime { background: var(--c-lime); color: var(--c-dark); }
+    .btn-turquoise { background: var(--c-turquoise); color: #fff; }
+    .btn-teal { background: var(--c-teal-dark); color: #fff; }
+    .btn-outline-light {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.28);
+    }
+    .btn-outline {
+      background: #fff;
+      color: var(--c-teal-dark);
+      border: 1px solid var(--c-border);
+    }
+    .btn-danger {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .container {
+      max-width: 1440px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* TARJETAS KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background: var(--c-card);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      border-left: 5px solid var(--c-turquoise);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-card.kpi-crit { border-left-color: #d32f2f; }
+    .kpi-card.kpi-due { border-left-color: #f57c00; }
+    .kpi-card.kpi-done { border-left-color: var(--c-lime); }
+    .kpi-card.kpi-progress { border-left-color: var(--c-teal-dark); }
+
+    .kpi-info span {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--c-muted);
+      font-weight: 700;
+    }
+
+    .kpi-info h2 {
+      font-size: 1.8rem;
+      margin-top: 4px;
+      color: var(--c-dark);
+    }
+
+    .kpi-icon {
+      font-size: 1.9rem;
+      opacity: 0.85;
+    }
+
+    /* PESTAÑAS */
+    .top-Bar-Tabs {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--c-card);
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 2px solid transparent;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--c-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: var(--c-bg);
+      color: var(--c-dark);
+    }
+
+    .tab-btn.active {
+      background: var(--c-teal-dark);
+      color: #fff;
+      border-color: var(--c-teal-dark);
+    }
+
+    .tab-counter {
+      background: rgba(0,0,0,0.15);
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.76rem;
+    }
+
+    .tab-btn.active .tab-counter {
+      background: var(--c-lime);
+      color: var(--c-dark);
+    }
+
+    /* PANELES Y TARJETAS */
+    .card-panel {
+      background: var(--c-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--c-border);
+    }
+
+    .card-header {
+      background: var(--c-teal-dark);
+      color: #fff;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--c-lime);
+    }
+
+    .card-header h3 {
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    /* FORMULARIO */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .col-4 { grid-column: span 4; }
+    .col-3 { grid-column: span 3; }
+    .col-2 { grid-column: span 2; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 960px) {
+      .col-4, .col-3, .col-2, .col-6, .col-8 { grid-column: span 6; }
+    }
+    @media (max-width: 640px) {
+      .col-4, .col-3, .col-2, .col-6, .col-8 { grid-column: span 12; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--c-teal-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-control {
+      padding: 9px 12px;
+      border: 1px solid var(--c-border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+      color: var(--c-text);
+      background: #fff;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--c-turquoise);
+      box-shadow: 0 0 0 3px rgba(0, 152, 144, 0.15);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    /* DROPZONE DE EVIDENCIAS */
+    .evidence-dropzone {
+      border: 2px dashed #b4c7c4;
+      background: #f8fbfb;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .evidence-dropzone:hover {
+      border-color: var(--c-turquoise);
+      background: var(--c-turquoise-light);
+    }
+
+    .evidence-dropzone p {
+      font-size: 0.83rem;
+      color: var(--c-teal-dark);
+      font-weight: 600;
+    }
+
+    .evidence-dropzone small {
+      font-size: 0.74rem;
+      color: var(--c-muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .evidence-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .evidence-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--c-lime-light);
+      border: 1px solid var(--c-lime);
+      color: var(--c-dark);
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .evidence-chip button {
+      background: none;
+      border: none;
+      color: #c62828;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    /* FILTROS */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      background: #f8faf9;
+      border-bottom: 1px solid var(--c-border);
+      align-items: flex-end;
+    }
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .filter-item.search-item {
+      flex: 2;
+      min-width: 230px;
+    }
+
+    .filter-item label {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--c-muted);
+      text-transform: uppercase;
+    }
+
+    /* TABLA */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      background: #eef3f2;
+      color: var(--c-dark);
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--c-border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--c-border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover {
+      background: #f5f9f8;
+    }
+
+    tbody td {
+      padding: 12px 14px;
+      font-size: 0.87rem;
+      vertical-align: middle;
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .crit-Baja { background: var(--crit-baja-bg); color: var(--crit-baja-txt); border: 1px solid #c8e6c9; }
+    .crit-Media { background: var(--crit-media-bg); color: var(--crit-media-txt); border: 1px solid #ffe082; }
+    .crit-Alta { background: var(--crit-alta-bg); color: var(--crit-alta-txt); border: 1px solid #ffcc80; }
+    .crit-Crítica { background: var(--crit-critica-bg); color: var(--crit-critica-txt); border: 1px solid #ef9a9a; animation: pulseCrit 2s infinite; }
+
+    @keyframes pulseCrit {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.25); }
+      50% { box-shadow: 0 0 0 5px rgba(198, 40, 40, 0); }
+    }
+
+    .sla-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    .sla-overdue { background: #ffebee; color: #c62828; }
+    .sla-today { background: #fff3e0; color: #e65100; }
+    .sla-soon { background: #fffde7; color: #f57f17; }
+    .sla-ok { background: #e8f5e9; color: #2e7d32; }
+
+    .tech-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eef3f2;
+      color: var(--c-dark);
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      border-left: 3px solid var(--c-turquoise);
+    }
+
+    .task-title-cell {
+      max-width: 340px;
+    }
+
+    .task-title-cell .title-text {
+      font-weight: 700;
+      color: var(--c-dark);
+      font-size: 0.93rem;
+      margin-bottom: 3px;
+    }
+
+    .task-title-cell .desc-preview {
+      color: var(--c-muted);
+      font-size: 0.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .last-followup-box {
+      margin-top: 6px;
+      padding: 5px 8px;
+      background: var(--c-turquoise-light);
+      border-left: 3px solid var(--c-turquoise);
+      border-radius: 4px;
+      font-size: 0.76rem;
+      color: var(--c-teal-dark);
+    }
+
+    .attach-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.74rem;
+      background: #f0f4f3;
+      color: var(--c-teal-dark);
+      padding: 3px 9px;
+      border-radius: 99px;
+      border: 1px solid #cdd9d7;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .attach-indicator:hover {
+      background: var(--c-lime-light);
+      border-color: var(--c-lime);
+    }
+
+    .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* MODALES */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 32, 30, 0.65);
+      backdrop-filter: blur(2px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-backdrop.active { display: flex; }
+
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    .modal-content.modal-lg { max-width: 860px; }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--c-dark), var(--c-teal-dark));
+      color: #fff;
+      padding: 14px 20px;
+      border-bottom: 4px solid var(--c-lime);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 { font-size: 1.05rem; }
+
+    .modal-close {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      background: #f5f8f7;
+      border-top: 1px solid var(--c-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* TIMELINE EXPEDIENTE */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      background: var(--c-border);
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      background: #f9fbfb;
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 14px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--c-turquoise);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--c-turquoise);
+    }
+
+    .timeline-item.tl-create::before {
+      background: var(--c-teal-dark);
+      box-shadow: 0 0 0 2px var(--c-teal-dark);
+    }
+
+    .timeline-item.tl-close {
+      background: var(--c-lime-light);
+      border-color: var(--c-lime);
+    }
+
+    .timeline-item.tl-close::before {
+      background: var(--c-lime);
+      box-shadow: 0 0 0 2px var(--c-lime);
+    }
+
+    .tl-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--c-muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .tl-text {
+      font-size: 0.88rem;
+      color: var(--c-dark);
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .evidence-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .evidence-thumb-card {
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      width: 130px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .evidence-thumb-card img {
+      width: 100%;
+      height: 85px;
+      object-fit: cover;
+      cursor: zoom-in;
+      background: #eee;
+    }
+
+    .evidence-file-box {
+      height: 85px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef3f2;
+      font-size: 2rem;
+    }
+
+    .evidence-thumb-meta {
+      padding: 5px 7px;
+      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      background: #fff;
+    }
+
+    .evidence-thumb-meta span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--c-muted);
+    }
+
+    .empty-state h4 {
+      font-size: 1.05rem;
+      color: var(--c-teal-dark);
+      margin-top: 8px;
+    }
+
+    /* VISOR LIGHTBOX */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 24px;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 92vw;
+      max-height: 82vh;
+      border-radius: 8px;
+      border: 2px solid var(--c-lime);
+      background: #fff;
+    }
+
+    /* TOAST */
+    #toastContainer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--c-dark);
+      color: #fff;
+      border-left: 5px solid var(--c-lime);
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      font-size: 0.86rem;
+      font-weight: 600;
+      animation: modalFadeIn 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CABECERA -->
+  <header>
+    <div class="brand-area">
+      <div class="brand-badge">ITS &amp; TICS</div>
+      <div class="brand-title">
+        <h1>Módulo de Asignación y Control de Tareas</h1>
+        <p>
+          <span>Gestión colaborativa en tiempo real</span>
+          <span class="sync-status-pill" onclick="openCloudModal()" title="Haz clic para configurar o ver la conexión en la nube">
+            <span class="sync-dot" id="syncDot"></span>
+            <span id="syncStatusText">Verificando nube...</span>
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-lime" onclick="toggleNewTaskPanel()">➕ Nueva Tarea</button>
+      <button class="btn btn-turquoise" id="btnSyncNow" onclick="pullFromCloud(true)">🔄 Sincronizar</button>
+      <button class="btn btn-outline-light" onclick="openCloudModal()">☁️ Nube</button>
+      <button class="btn btn-outline-light" onclick="openTechModal()">👥 Técnicos</button>
+      <button class="btn btn-outline-light" onclick="exportToCSV()">📊 Exportar CSV</button>
+      <button class="btn btn-outline-light" onclick="exportBackupJSON()">💾 Backup JSON</button>
+      <label class="btn btn-outline-light" style="margin:0;">
+        📂 Importar JSON
+        <input type="file" id="importJsonInput" accept=".json" style="display:none" onchange="importBackupJSON(event)" />
+      </label>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- TARJETAS KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <span>Tareas Pendientes</span>
+          <h2 id="kpiPending">0</h2>
+        </div>
+        <div class="kpi-icon">📋</div>
+      </div>
+
+      <div class="kpi-card kpi-crit">
+        <div class="kpi-info">
+          <span>Criticidad Alta / Crítica</span>
+          <h2 id="kpiCritical">0</h2>
+        </div>
+        <div class="kpi-icon">🚨</div>
+      </div>
+
+      <div class="kpi-card kpi-due">
+        <div class="kpi-info">
+          <span>Vencidas / Vencen Hoy</span>
+          <h2 id="kpiDue">0</h2>
+        </div>
+        <div class="kpi-icon">⏰</div>
+      </div>
+
+      <div class="kpi-card kpi-progress">
+        <div class="kpi-info">
+          <span>En Seguimiento Activo</span>
+          <h2 id="kpiInFollowup">0</h2>
+        </div>
+        <div class="kpi-icon">🔄</div>
+      </div>
+
+      <div class="kpi-card kpi-done">
+        <div class="kpi-info">
+          <span>Historial Finalizadas</span>
+          <h2 id="kpiCompleted">0</h2>
+        </div>
+        <div class="kpi-icon">✅</div>
+      </div>
+    </div>
+
+    <!-- PANEL CREAR NUEVA TAREA -->
+    <div class="card-panel" id="newTaskPanel">
+      <div class="card-header">
+        <h3>📝 Asignar Nueva Tarea / Requerimiento</h3>
+        <button class="btn btn-sm btn-outline-light" onclick="toggleNewTaskPanel()">Ocultar / Mostrar</button>
+      </div>
+      <div class="card-body" id="newTaskBody">
+        <form id="createTaskForm" onsubmit="handleCreateTask(event)">
+          <div class="form-grid">
+            <div class="form-group col-4">
+              <label>Título de la Tarea *</label>
+              <input type="text" id="tTitle" class="form-control" placeholder="Ej: Revisión NVR Móvil / Configuración Switch..." required />
+            </div>
+
+            <div class="form-group col-3">
+              <label>Técnico Asignado *</label>
+              <select id="tTech" class="form-control" required></select>
+            </div>
+
+            <div class="form-group col-2">
+              <label>Categoría / Área</label>
+              <select id="tCategory" class="form-control">
+                <option value="TICS / Soporte">TICS / Soporte</option>
+                <option value="ITS / Flota">ITS / Flota</option>
+                <option value="CCTV / Video">CCTV / Video</option>
+                <option value="Redes / Infraestructura">Redes / Infraestructura</option>
+                <option value="Telemetría / Datos">Telemetría / Datos</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+
+            <div class="form-group col-3">
+              <label>Criticidad *</label>
+              <select id="tCriticality" class="form-control" required>
+                <option value="Media">🟡 Media</option>
+                <option value="Baja">🟢 Baja</option>
+                <option value="Alta">🟠 Alta</option>
+                <option value="Crítica">🔴 Crítica / Urgente</option>
+              </select>
+            </div>
+
+            <div class="form-group col-3">
+              <label>Fecha Objetivo de Cumplimiento *</label>
+              <input type="date" id="tDueDate" class="form-control" required />
+            </div>
+
+            <div class="form-group col-3">
+              <label>Solicitado por / Origen</label>
+              <input type="text" id="tRequester" class="form-control" placeholder="Ej: Jefe Iván / Mesa de Ayuda" value="Jefe TICS / ITS" />
+            </div>
+
+            <div class="form-group col-6">
+              <label>Evidencia Inicial (Opcional - Oculta en el listado principal)</label>
+              <div class="evidence-dropzone" id="createDropzone" onclick="document.getElementById('tEvidenceInput').click()">
+                <p>📎 Haz clic para subir archivo/imagen o pega una captura con <b>Ctrl + V</b></p>
+                <small>Soporta imágenes (PNG, JPG) o documentos. Se sincronizará con todos los equipos.</small>
+                <input type="file" id="tEvidenceInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" style="display:none" onchange="handleFilesSelected(event, 'create')" />
+              </div>
+              <div class="evidence-chips" id="createEvidenceChips"></div>
+            </div>
+
+            <div class="form-group col-12">
+              <label>Descripción / Detalle de lo que hay que hacer *</label>
+              <textarea id="tDescription" class="form-control" placeholder="Describe las instrucciones enviadas por el jefe, seriales, móviles o detalles importantes..." required></textarea>
+            </div>
+
+            <div class="col-12" style="display:flex; justify-content:flex-end; gap:10px;">
+              <button type="button" class="btn btn-outline" onclick="resetCreateForm()">Limpiar</button>
+              <button type="submit" class="btn btn-lime">💾 Registrar y Sincronizar Tarea</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <div class="top-Bar-Tabs">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabBtnPending" onclick="switchTab('pending')">
+          ⏳ Tareas Pendientes y en Seguimiento
+          <span class="tab-counter" id="badgePendingCount">0</span>
+        </button>
+        <button class="tab-btn" id="tabBtnHistory" onclick="switchTab('history')">
+          🗂️ Historial de Tareas Hechas
+          <span class="tab-counter" id="badgeHistoryCount">0</span>
+        </button>
+      </div>
+      <div style="font-size:0.8rem; color:var(--c-muted);">
+        💡 <b>Tip:</b> Pega capturas de WhatsApp o correo con <b>Ctrl + V</b> en cualquier ventana abierta.
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: PENDIENTES -->
+    <div class="card-panel" id="sectionPending">
+      <div class="card-header">
+        <h3>📋 Control de Tareas Activas (Pendientes)</h3>
+        <span style="font-size:0.8rem; opacity:0.9;">Las evidencias están ocultas en la fila; pulsa "Expediente" para verlas</span>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-item search-item">
+          <label>Buscar por título, descripción o avance</label>
+          <input type="text" id="fPendSearch" class="form-control" placeholder="🔍 Escribe para filtrar..." oninput="renderPendingTasks()" />
+        </div>
+        <div class="filter-item">
+          <label>Técnico Asignado</label>
+          <select id="fPendTech" class="form-control" onchange="renderPendingTasks()">
+            <option value="ALL">Todos los técnicos</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Criticidad</label>
+          <select id="fPendCrit" class="form-control" onchange="renderPendingTasks()">
+            <option value="ALL">Todas</option>
+            <option value="Crítica">🔴 Crítica</option>
+            <option value="Alta">🟠 Alta</option>
+            <option value="Media">🟡 Media</option>
+            <option value="Baja">🟢 Baja</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Estado de Plazo (SLA)</label>
+          <select id="fPendSLA" class="form-control" onchange="renderPendingTasks()">
+            <option value="ALL">Todos los plazos</option>
+            <option value="OVERDUE">🔴 Vencidas</option>
+            <option value="TODAY">🟠 Vencen Hoy</option>
+            <option value="UPCOMING">🟢 En Plazo</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" onclick="clearPendingFilters()">Limpiar</button>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>ID / Creación</th>
+              <th>Tarea / Descripción y Último Seguimiento</th>
+              <th>Técnico</th>
+              <th>Criticidad</th>
+              <th>Fecha Objetivo</th>
+              <th>Seguimientos / Adjuntos</th>
+              <th>Acciones de Gestión</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: HISTORIAL -->
+    <div class="card-panel" id="sectionHistory" style="display:none;">
+      <div class="card-header">
+        <h3>✅ Historial de Tareas Finalizadas</h3>
+        <span style="font-size:0.8rem; opacity:0.9;">Registro completo con auditoría de fechas, avances y evidencias de cierre</span>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-item search-item">
+          <label>Buscar en Historial (Título, solución, técnico...)</label>
+          <input type="text" id="fHistSearch" class="form-control" placeholder="🔍 Buscar palabra clave..." oninput="renderHistoryTasks()" />
+        </div>
+        <div class="filter-item">
+          <label>Técnico</label>
+          <select id="fHistTech" class="form-control" onchange="renderHistoryTasks()">
+            <option value="ALL">Todos los técnicos</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Criticidad</label>
+          <select id="fHistCrit" class="form-control" onchange="renderHistoryTasks()">
+            <option value="ALL">Todas</option>
+            <option value="Crítica">🔴 Crítica</option>
+            <option value="Alta">🟠 Alta</option>
+            <option value="Media">🟡 Media</option>
+            <option value="Baja">🟢 Baja</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Categoría</label>
+          <select id="fHistCat" class="form-control" onchange="renderHistoryTasks()">
+            <option value="ALL">Todas las áreas</option>
+            <option value="TICS / Soporte">TICS / Soporte</option>
+            <option value="ITS / Flota">ITS / Flota</option>
+            <option value="CCTV / Video">CCTV / Video</option>
+            <option value="Redes / Infraestructura">Redes / Infraestructura</option>
+            <option value="Telemetría / Datos">Telemetría / Datos</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Cumplimiento</label>
+          <select id="fHistSLA" class="form-control" onchange="renderHistoryTasks()">
+            <option value="ALL">Todos</option>
+            <option value="ONTIME">🟢 Cumplida en Plazo</option>
+            <option value="LATE">🔴 Finalizada con Retraso</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Cerrada Desde</label>
+          <input type="date" id="fHistFrom" class="form-control" onchange="renderHistoryTasks()" />
+        </div>
+        <div class="filter-item">
+          <label>Cerrada Hasta</label>
+          <input type="date" id="fHistTo" class="form-control" onchange="renderHistoryTasks()" />
+        </div>
+        <button class="btn btn-outline" onclick="clearHistoryFilters()">Limpiar Filtros</button>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>ID / Categoría</th>
+              <th>Tarea y Resumen de Solución Final</th>
+              <th>Técnico</th>
+              <th>Criticidad</th>
+              <th>Fecha Objetivo vs Cierre</th>
+              <th>Trazabilidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL 1: DAR SEGUIMIENTO -->
+  <div class="modal-backdrop" id="modalFollowup">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔄 Registrar Seguimiento / Avance de Tarea</h3>
+        <button class="modal-close" onclick="closeModal('modalFollowup')">✕</button>
+      </div>
+      <form onsubmit="submitFollowup(event)">
+        <div class="modal-body">
+          <input type="hidden" id="fuTaskId" />
+          <div style="background:#f3f7f6; padding:12px; border-radius:8px; border-left:4px solid var(--c-turquoise);">
+            <div style="font-size:0.78rem; color:var(--c-muted); font-weight:700;" id="fuTaskMeta"></div>
+            <div style="font-size:1rem; font-weight:700; color:var(--c-dark); margin-top:2px;" id="fuTaskTitle"></div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group col-6">
+              <label>Registrado por (Técnico)</label>
+              <select id="fuAuthor" class="form-control"></select>
+            </div>
+            <div class="form-group col-6">
+              <label>Ajustar Criticidad (Si cambió)</label>
+              <select id="fuCrit" class="form-control">
+                <option value="Baja">🟢 Baja</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Alta">🟠 Alta</option>
+                <option value="Crítica">🔴 Crítica / Urgente</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción del Avance / Novedad *</label>
+            <textarea id="fuText" class="form-control" placeholder="Escribe qué se adelantó, qué pruebas se hicieron o qué queda pendiente..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Subir Evidencia del Avance (Opcional - Soporta Ctrl + V)</label>
+            <div class="evidence-dropzone" onclick="document.getElementById('fuEvidenceInput').click()">
+              <p>📎 Haz clic para adjuntar evidencia del avance o presiona <b>Ctrl + V</b></p>
+              <small>La tarea seguirá en estado PENDIENTE y se sincronizará con todos los equipos.</small>
+              <input type="file" id="fuEvidenceInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" style="display:none" onchange="handleFilesSelected(event, 'followup')" />
+            </div>
+            <div class="evidence-chips" id="followupEvidenceChips"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalFollowup')">Cancelar</button>
+          <button type="submit" class="btn btn-turquoise">💾 Guardar Avance (Mantener Pendiente)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: FINALIZAR TAREA -->
+  <div class="modal-backdrop" id="modalFinalize">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✅ Finalizar Tarea y Pasar al Historial</h3>
+        <button class="modal-close" onclick="closeModal('modalFinalize')">✕</button>
+      </div>
+      <form onsubmit="submitFinalize(event)">
+        <div class="modal-body">
+          <input type="hidden" id="finTaskId" />
+          <div style="background:var(--c-lime-light); padding:12px; border-radius:8px; border-left:4px solid var(--c-lime);">
+            <div style="font-size:0.78rem; color:var(--c-teal-dark); font-weight:700;" id="finTaskMeta"></div>
+            <div style="font-size:1rem; font-weight:700; color:var(--c-dark); margin-top:2px;" id="finTaskTitle"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción de Cierre / Solución Aplicada *</label>
+            <textarea id="finText" class="form-control" placeholder="Detalla cómo se solucionó o completó la tarea asignada..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Evidencia de Finalización (Opcional - Soporta Ctrl + V)</label>
+            <div class="evidence-dropzone" onclick="document.getElementById('finEvidenceInput').click()">
+              <p>📎 Haz clic para adjuntar la evidencia de cierre o presiona <b>Ctrl + V</b></p>
+              <small>Al confirmar, pasará al Historial de Tareas Hechas en todos los equipos.</small>
+              <input type="file" id="finEvidenceInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" style="display:none" onchange="handleFilesSelected(event, 'finalize')" />
+            </div>
+            <div class="evidence-chips" id="finalizeEvidenceChips"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalFinalize')">Cancelar</button>
+          <button type="submit" class="btn btn-lime">✅ Confirmar y Finalizar Tarea</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: EXPEDIENTE COMPLETO -->
+  <div class="modal-backdrop" id="modalDetail">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="detHeaderTitle">📂 Expediente y Trazabilidad de Tarea</h3>
+        <button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
+      </div>
+      <div class="modal-body" id="detModalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalDetail')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: GESTIONAR TÉCNICOS -->
+  <div class="modal-backdrop" id="modalTechs">
+    <div class="modal-content" style="max-width:480px;">
+      <div class="modal-header">
+        <h3>👥 Gestionar Lista de Técnicos</h3>
+        <button class="modal-close" onclick="closeModal('modalTechs')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="addTechnician(event)" style="display:flex; gap:8px;">
+          <input type="text" id="newTechName" class="form-control" placeholder="Nombre del técnico..." style="flex:1;" required />
+          <button type="submit" class="btn btn-lime">➕ Agregar</button>
+        </form>
+        <div id="techListContainer" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalTechs')">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CONFIGURACIÓN PUENTE NUBE (GOOGLE APPS SCRIPT) -->
+  <div class="modal-backdrop" id="modalCloud">
+    <div class="modal-content" style="max-width:560px;">
+      <div class="modal-header">
+        <h3>☁️ Sincronización Multi-Equipo (Google Apps Script)</h3>
+        <button class="modal-close" onclick="closeModal('modalCloud')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.86rem; color:var(--c-muted); line-height:1.45;">
+          Pega aquí la <b>URL de la Aplicación Web</b> de Google Apps Script (terminada en <code>/exec</code>). Si también la pegas en la variable <code>DEFAULT_CLOUD_URL</code> dentro del código antes de subirlo a GitHub, todos los equipos se conectarán solos sin tener que pegarla manualmente.
+        </p>
+        <div class="form-group">
+          <label>URL del Puente Google Apps Script (/exec)</label>
+          <input type="url" id="cloudUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" />
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-turquoise" onclick="saveCloudConfigAndPull()">🔗 Guardar URL y Descargar Datos</button>
+          <button type="button" class="btn btn-lime" onclick="pushToCloud(true)">⬆️ Subir Datos Locales a la Nube</button>
+        </div>
+        <div id="cloudLastSyncInfo" style="font-size:0.78rem; color:var(--c-muted); margin-top:4px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalCloud')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISOR LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Evidencia" />
+    <div style="display:flex; gap:12px;">
+      <a id="lightboxDownload" href="" download="evidencia.png" class="btn btn-lime" onclick="event.stopPropagation()">⬇️ Descargar Imagen</a>
+      <button class="btn btn-outline-light" onclick="closeLightbox()">✕ Cerrar Vista</button>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE TOASTS -->
+  <div id="toastContainer"></div>
+
+  <script>
+    /*************************************************************************
+     * 1. CONFIGURACIÓN DEL PUENTE EN LA NUBE (GOOGLE APPS SCRIPT)
+     * 👇 PEGA AQUÍ TU URL "/exec" ANTES DE SUBIR A GITHUB PARA QUE TODOS LOS
+     * EQUIPOS QUEDEN CONECTADOS AUTOMÁTICAMENTE AL ABRIR EL ENLACE:
+     *************************************************************************/
+    const DEFAULT_CLOUD_URL = "[https://script.google.com/macros/s/AKfycbzP5vKqz8aoKB_6a99N9-3yVaQdgpJjl5RkzNkSgqip9rBde64Y0mggEA7NILG6PZgE/exec](https://script.google.com/macros/s/AKfycbzP5vKqz8aoKB_6a99N9-3yVaQdgpJjl5RkzNkSgqip9rBde64Y0mggEA7NILG6PZgE/exec)";
+
+    const STORAGE_KEY_TASKS = 'esomos_tareas_module_v1';
+    const STORAGE_KEY_TECHS = 'esomos_tecnicos_module_v1';
+    const STORAGE_KEY_CLOUD_URL = 'esomos_tareas_cloud_url_v1';
+
+    let tasks = [];
+    let technicians = [];
+    let isSyncing = false;
+
+    const tempEvidences = {
+      create: [],
+      followup: [],
+      finalize: []
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadLocalData();
+      setDefaultDueDate();
+      renderTechSelectors();
+      renderAll();
+
+      window.addEventListener('paste', handleGlobalPaste);
+
+      // Si hay URL de nube configurada, sincroniza al iniciar
+      if (getCloudUrl()) {
+        await pullFromCloud(false);
+      } else {
+        updateSyncIndicator('local', 'Modo Local (Configura URL Nube)');
+      }
+
+      // Auto-refresco silencioso cada 60 segundos si no hay modales abiertos
+      setInterval(() => {
+        const anyModalOpen = document.querySelector('.modal-backdrop.active');
+        if (getCloudUrl() && !anyModalOpen && !isSyncing) {
+          pullFromCloud(false);
+        }
+      }, 60000);
+    });
+
+    function getCloudUrl() {
+      const custom = localStorage.getItem(STORAGE_KEY_CLOUD_URL);
+      return (custom && custom.trim()) ? custom.trim() : DEFAULT_CLOUD_URL.trim();
+    }
+
+    function updateSyncIndicator(state, text) {
+      const dot = document.getElementById('syncDot');
+      const label = document.getElementById('syncStatusText');
+      dot.className = 'sync-dot';
+      if (state === 'online') dot.classList.add('online');
+      if (state === 'syncing') dot.classList.add('syncing');
+      if (state === 'error') dot.classList.add('error');
+      label.textContent = text;
+    }
+
+    /*************************************************************************
+     * SINCRONIZACIÓN CON GOOGLE DRIVE (PULL Y PUSH)
+     *************************************************************************/
+    async function pullFromCloud(showNotification = false) {
+      const url = getCloudUrl();
+      if (!url) {
+        if (showNotification) openCloudModal();
+        return;
+      }
+
+      try {
+        isSyncing = true;
+        updateSyncIndicator('syncing', 'Sincronizando con Drive...');
+        const response = await fetch(url + '?t=' + Date.now(), {
+          method: 'GET',
+          redirect: 'follow'
+        });
+        const result = await response.json();
+
+        if (result && result.ok && result.data) {
+          if (Array.isArray(result.data.tasks)) {
+            tasks = result.data.tasks;
+            saveTasksLocalOnly();
+          }
+          if (Array.isArray(result.data.technicians) && result.data.technicians.length > 0) {
+            technicians = result.data.technicians;
+            saveTechsLocalOnly();
+            renderTechSelectors();
+          }
+          renderAll();
+          const timeStr = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+          updateSyncIndicator('online', `Nube conectada (${timeStr})`);
+          if (showNotification) showToast('☁️ Datos actualizados desde la nube');
+        } else {
+          throw new Error(result?.error || 'Respuesta inválida');
+        }
+      } catch (err) {
+        console.error('Error al descargar de la nube:', err);
+        updateSyncIndicator('error', 'Error de conexión (Usando copia local)');
+        if (showNotification) showToast('⚠️ No se pudo conectar con Google Apps Script');
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    async function pushToCloud(showNotification = false) {
+      const url = getCloudUrl();
+      if (!url) {
+        updateSyncIndicator('local', 'Guardado en este PC (Sin Nube)');
+        return;
+      }
+
+      try {
+        isSyncing = true;
+        updateSyncIndicator('syncing', 'Guardando en la nube...');
+        const payload = {
+          technicians,
+          tasks
+        };
+
+        // Usamos text/plain para evitar bloqueos CORS preflight en Google Apps Script
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          redirect: 'follow'
+        });
+
+        const result = await response.json();
+        if (result && result.ok) {
+          const timeStr = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+          updateSyncIndicator('online', `Sincronizado (${timeStr})`);
+          if (showNotification) showToast('☁️ Todos los datos fueron subidos a la nube');
+        } else {
+          throw new Error(result?.error || 'Error al guardar');
+        }
+      } catch (err) {
+        console.error('Error al subir a la nube:', err);
+        updateSyncIndicator('error', 'Error al subir cambios');
+        if (showNotification) showToast('⚠️ Error al subir a la nube; guardado en local');
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    function openCloudModal() {
+      document.getElementById('cloudUrlInput').value = getCloudUrl();
+      document.getElementById('modalCloud').classList.add('active');
+    }
+
+    async function saveCloudConfigAndPull() {
+      const val = document.getElementById('cloudUrlInput').value.trim();
+      if (val) {
+        localStorage.setItem(STORAGE_KEY_CLOUD_URL, val);
+        closeModal('modalCloud');
+        await pullFromCloud(true);
+      } else {
+        localStorage.removeItem(STORAGE_KEY_CLOUD_URL);
+        updateSyncIndicator('local', 'Modo Local (Sin URL)');
+        closeModal('modalCloud');
+      }
+    }
+
+    /*************************************************************************
+     * CARGA Y GUARDADO LOCAL + DISPARADOR NUBE
+     *************************************************************************/
+    function loadLocalData() {
+      const savedTechs = localStorage.getItem(STORAGE_KEY_TECHS);
+      if (savedTechs) {
+        technicians = JSON.parse(savedTechs);
+      } else {
+        technicians = [
+          'Mateo Pinto',
+          'Técnico Turno 1 (ITS)',
+          'Técnico Turno 2 (ITS)',
+          'Soporte TICS',
+          'Especialista CCTV / Redes'
+        ];
+        saveTechsLocalOnly();
+      }
+
+      const savedTasks = localStorage.getItem(STORAGE_KEY_TASKS);
+      if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+      } else {
+        tasks = [];
+      }
+    }
+
+    function saveTasksLocalOnly() {
+      try {
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      } catch (e) {
+        console.warn('Almacenamiento local al límite, respaldado en nube.');
+      }
+    }
+
+    function saveTechsLocalOnly() {
+      localStorage.setItem(STORAGE_KEY_TECHS, JSON.stringify(technicians));
+    }
+
+    function saveAndSync() {
+      saveTasksLocalOnly();
+      saveTechsLocalOnly();
+      pushToCloud(false);
+    }
+
+    function setDefaultDueDate() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('tDueDate').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    /*************************************************************************
+     * EVIDENCIAS (ARCHIVOS + CTRL+V + COMPRESIÓN LIGERA PARA NUBE)
+     *************************************************************************/
+    async function handleFilesSelected(event, targetKey) {
+      const files = Array.from(event.target.files || []);
+      for (const file of files) {
+        const processed = await processFileToEvidence(file);
+        if (processed) tempEvidences[targetKey].push(processed);
+      }
+      event.target.value = '';
+      renderEvidenceChips(targetKey);
+    }
+
+    async function handleGlobalPaste(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData)?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          if (blob) {
+            let target = 'create';
+            if (document.getElementById('modalFollowup').classList.contains('active')) {
+              target = 'followup';
+            } else if (document.getElementById('modalFinalize').classList.contains('active')) {
+              target = 'finalize';
+            }
+            const timestamp = new Date().toTimeString().slice(0,8).replace(/:/g,'');
+            const namedFile = new File([blob], `captura_${timestamp}.jpg`, { type: blob.type });
+            const processed = await processFileToEvidence(namedFile);
+            if (processed) {
+              tempEvidences[target].push(processed);
+              renderEvidenceChips(target);
+              showToast(`📸 Captura adjuntada en ${target === 'create' ? 'Nueva Tarea' : target === 'followup' ? 'Seguimiento' : 'Finalización'}`);
+            }
+          }
+        }
+      }
+    }
+
+    function processFileToEvidence(file) {
+      return new Promise((resolve) => {
+        const isImage = file.type.startsWith('image/');
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          if (!isImage) {
+            if (file.size > 2 * 1024 * 1024) {
+              alert(`El archivo "${file.name}" supera los 2MB recomendados.`);
+              resolve(null);
+              return;
+            }
+            resolve({
+              id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+              name: file.name,
+              type: file.type || 'application/octet-stream',
+              isImage: false,
+              dataUrl: e.target.result
+            });
+          } else {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 1050;
+              const MAX_HEIGHT = 1050;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > height && width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              } else if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.74);
+
+              resolve({
+                id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                name: file.name,
+                type: 'image/jpeg',
+                isImage: true,
+                dataUrl: compressedDataUrl
+              });
+            };
+            img.src = e.target.result;
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderEvidenceChips(targetKey) {
+      const containerId =
+        targetKey === 'create' ? 'createEvidenceChips' :
+        targetKey === 'followup' ? 'followupEvidenceChips' : 'finalizeEvidenceChips';
+
+      const container = document.getElementById(containerId);
+      const list = tempEvidences[targetKey];
+
+      if (!list.length) {
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = list.map((ev, idx) => `
+        <span class="evidence-chip">
+          ${ev.isImage ? '🖼️' : '📄'} ${escapeHtml(ev.name)}
+          <button type="button" title="Quitar" onclick="removeTempEvidence('${targetKey}', ${idx})">×</button>
+        </span>
+      `).join('');
+    }
+
+    function removeTempEvidence(targetKey, index) {
+      tempEvidences[targetKey].splice(index, 1);
+      renderEvidenceChips(targetKey);
+    }
+
+    /*************************************************************************
+     * CREACIÓN, SEGUIMIENTO Y FINALIZACIÓN
+     *************************************************************************/
+    function getNextTaskCode() {
+      let maxNum = 0;
+      tasks.forEach(t => {
+        const match = String(t.code || '').match(/T-(\d+)/);
+        if (match) {
+          const n = parseInt(match[1], 10);
+          if (n > maxNum) maxNum = n;
+        }
+      });
+      return 'T-' + String(maxNum + 1).padStart(3, '0');
+    }
+
+    function handleCreateTask(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('tTitle').value.trim();
+      const tech = document.getElementById('tTech').value;
+      const category = document.getElementById('tCategory').value;
+      const criticality = document.getElementById('tCriticality').value;
+      const dueDate = document.getElementById('tDueDate').value;
+      const requester = document.getElementById('tRequester').value.trim() || 'Jefe TICS / ITS';
+      const description = document.getElementById('tDescription').value.trim();
+
+      if (!title || !description || !tech || !dueDate) return;
+
+      const shortId = getNextTaskCode();
+
+      const newTask = {
+        id: 'task_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+        code: shortId,
+        title,
+        tech,
+        category,
+        criticality,
+        dueDate,
+        requester,
+        description,
+        initialEvidences: [...tempEvidences.create],
+        status: 'Pendiente',
+        createdAt: new Date().toISOString(),
+        followups: [],
+        closing: null
+      };
+
+      tasks.unshift(newTask);
+      resetCreateForm();
+      renderAll();
+      saveAndSync();
+      showToast(`✅ Tarea ${shortId} asignada a ${tech}`);
+    }
+
+    function resetCreateForm() {
+      document.getElementById('createTaskForm').reset();
+      setDefaultDueDate();
+      tempEvidences.create = [];
+      renderEvidenceChips('create');
+    }
+
+    function toggleNewTaskPanel() {
+      const body = document.getElementById('newTaskBody');
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function openFollowupModal(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('fuTaskId').value = task.id;
+      document.getElementById('fuTaskMeta').textContent = `${task.code} • Asignada a: ${task.tech} • Fecha Objetivo: ${formatDateDisplay(task.dueDate)}`;
+      document.getElementById('fuTaskTitle').textContent = task.title;
+      document.getElementById('fuAuthor').value = task.tech;
+      document.getElementById('fuCrit').value = task.criticality;
+      document.getElementById('fuText').value = '';
+
+      tempEvidences.followup = [];
+      renderEvidenceChips('followup');
+
+      document.getElementById('modalFollowup').classList.add('active');
+    }
+
+    function submitFollowup(e) {
+      e.preventDefault();
+      const taskId = document.getElementById('fuTaskId').value;
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const text = document.getElementById('fuText').value.trim();
+      const author = document.getElementById('fuAuthor').value;
+      const newCrit = document.getElementById('fuCrit').value;
+
+      if (!text) return;
+
+      task.criticality = newCrit;
+      task.followups.push({
+        id: 'fu_' + Date.now(),
+        date: new Date().toISOString(),
+        author,
+        text,
+        evidences: [...tempEvidences.followup]
+      });
+
+      task.status = 'Pendiente';
+
+      closeModal('modalFollowup');
+      renderAll();
+      saveAndSync();
+      showToast(`🔄 Avance guardado y sincronizado (${task.code})`);
+    }
+
+    function openFinalizeModal(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('finTaskId').value = task.id;
+      document.getElementById('finTaskMeta').textContent = `${task.code} • Responsable: ${task.tech} • Objetivo: ${formatDateDisplay(task.dueDate)}`;
+      document.getElementById('finTaskTitle').textContent = task.title;
+      document.getElementById('finText').value = '';
+
+      tempEvidences.finalize = [];
+      renderEvidenceChips('finalize');
+
+      document.getElementById('modalFinalize').classList.add('active');
+    }
+
+    function submitFinalize(e) {
+      e.preventDefault();
+      const taskId = document.getElementById('finTaskId').value;
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const text = document.getElementById('finText').value.trim();
+      if (!text) return;
+
+      task.status = 'Finalizada';
+      task.closing = {
+        date: new Date().toISOString(),
+        text,
+        evidences: [...tempEvidences.finalize]
+      };
+
+      closeModal('modalFinalize');
+      renderAll();
+      saveAndSync();
+      showToast(`🎉 Tarea ${task.code} finalizada y sincronizada en el Historial`);
+    }
+
+    function reopenTask(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      if (!confirm(`¿Deseas reabrir la tarea "${task.title}" y devolverla a Pendientes?`)) return;
+
+      if (task.closing) {
+        task.followups.push({
+          id: 'fu_' + Date.now(),
+          date: new Date().toISOString(),
+          author: task.tech,
+          text: `[TAREA REABIERTA] Nota del cierre anterior: ${task.closing.text}`,
+          evidences: task.closing.evidences || []
+        });
+      }
+      task.status = 'Pendiente';
+      task.closing = null;
+      renderAll();
+      saveAndSync();
+      showToast(`↩️ Tarea ${task.code} devuelta a Pendientes`);
+    }
+
+    function deleteTask(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      if (!confirm(`¿Seguro que deseas eliminar permanentemente la tarea ${task.code} ("${task.title}")?`)) return;
+
+      tasks = tasks.filter(t => t.id !== taskId);
+      renderAll();
+      saveAndSync();
+      showToast(`🗑️ Tarea eliminada`);
+    }
+
+    /*************************************************************************
+     * EXPEDIENTE Y GALERÍA DE EVIDENCIAS
+     *************************************************************************/
+    function openDetailModal(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('detHeaderTitle').textContent = `📂 Expediente ${task.code}: ${task.title}`;
+      const slaInfo = getSlaInfo(task);
+
+      let html = `
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:10px; background:#f4f8f7; padding:14px; border-radius:8px; border:1px solid var(--c-border);">
+          <div>
+            <small style="color:var(--c-muted); font-weight:700;">TÉCNICO ASIGNADO</small>
+            <div style="font-weight:700; margin-top:2px;">👤 ${escapeHtml(task.tech)}</div>
+          </div>
+          <div>
+            <small style="color:var(--c-muted); font-weight:700;">CRITICIDAD / ÁREA</small>
+            <div style="margin-top:2px;"><span class="badge crit-${task.criticality}">${task.criticality}</span> <small>${escapeHtml(task.category || '')}</small></div>
+          </div>
+          <div>
+            <small style="color:var(--c-muted); font-weight:700;">FECHA OBJETIVO</small>
+            <div style="font-weight:700; margin-top:2px;">📅 ${formatDateDisplay(task.dueDate)}</div>
+            <span class="sla-badge ${slaInfo.class}">${slaInfo.label}</span>
+          </div>
+          <div>
+            <small style="color:var(--c-muted); font-weight:700;">SOLICITADO POR</small>
+            <div style="font-weight:700; margin-top:2px;">🗣️ ${escapeHtml(task.requester || 'Jefe')}</div>
+            <small style="color:var(--c-muted);">Creada: ${formatDateTimeDisplay(task.createdAt)}</small>
+          </div>
+        </div>
+
+        <h4 style="color:var(--c-teal-dark); margin-top:4px;">⏳ Línea de Tiempo y Evidencias Adjuntas</h4>
+        <div class="timeline">
+          <div class="timeline-item tl-create">
+            <div class="tl-head">
+              <span>📌 REQUERIMIENTO INICIAL (${escapeHtml(task.requester || 'Asignación')})</span>
+              <span>${formatDateTimeDisplay(task.createdAt)}</span>
+            </div>
+            <div class="tl-text">${escapeHtml(task.description)}</div>
+            ${renderEvidenceGalleryHTML(task.initialEvidences)}
+          </div>
+      `;
+
+      if (task.followups && task.followups.length > 0) {
+        task.followups.forEach((fu, idx) => {
+          html += `
+            <div class="timeline-item">
+              <div class="tl-head">
+                <span>🔄 SEGUIMIENTO #${idx + 1} — Por: ${escapeHtml(fu.author || task.tech)}</span>
+                <span>${formatDateTimeDisplay(fu.date)}</span>
+              </div>
+              <div class="tl-text">${escapeHtml(fu.text)}</div>
+              ${renderEvidenceGalleryHTML(fu.evidences)}
+            </div>
+          `;
+        });
+      }
+
+      if (task.status === 'Finalizada' && task.closing) {
+        html += `
+          <div class="timeline-item tl-close">
+            <div class="tl-head" style="color:var(--c-teal-dark);">
+              <span>✅ TAREA FINALIZADA / SOLUCIÓN DEFINITIVA</span>
+              <span>${formatDateTimeDisplay(task.closing.date)}</span>
+            </div>
+            <div class="tl-text">${escapeHtml(task.closing.text)}</div>
+            ${renderEvidenceGalleryHTML(task.closing.evidences)}
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      document.getElementById('detModalBody').innerHTML = html;
+      document.getElementById('modalDetail').classList.add('active');
+    }
+
+    function renderEvidenceGalleryHTML(evidences) {
+      if (!evidences || !evidences.length) return '';
+
+      const itemsHtml = evidences.map(ev => {
+        if (ev.isImage) {
+          return `
+            <div class="evidence-thumb-card">
+              <img src="${ev.dataUrl}" alt="${escapeHtml(ev.name)}" onclick="openLightbox('${ev.dataUrl}', '${escapeHtml(ev.name)}')" title="Clic para ampliar imagen" />
+              <div class="evidence-thumb-meta">
+                <span title="${escapeHtml(ev.name)}">${escapeHtml(ev.name)}</span>
+                <a href="${ev.dataUrl}" download="${escapeHtml(ev.name)}" title="Descargar">⬇️</a>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="evidence-thumb-card">
+              <div class="evidence-file-box">📄</div>
+              <div class="evidence-thumb-meta">
+                <span title="${escapeHtml(ev.name)}">${escapeHtml(ev.name)}</span>
+                <a href="${ev.dataUrl}" download="${escapeHtml(ev.name)}" title="Descargar archivo">⬇️</a>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+
+      return `<div class="evidence-gallery">${itemsHtml}</div>`;
+    }
+
+    function openLightbox(dataUrl, name) {
+      document.getElementById('lightboxImg').src = dataUrl;
+      const dl = document.getElementById('lightboxDownload');
+      dl.href = dataUrl;
+      dl.download = name || 'evidencia.jpg';
+      document.getElementById('lightbox').classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+    }
+
+    /*************************************************************************
+     * RENDERIZADO DE TABLAS Y KPIS
+     *************************************************************************/
+    function renderAll() {
+      updateKPIs();
+      renderPendingTasks();
+      renderHistoryTasks();
+    }
+
+    function updateKPIs() {
+      const pending = tasks.filter(t => t.status === 'Pendiente');
+      const completed = tasks.filter(t => t.status === 'Finalizada');
+
+      const criticalCount = pending.filter(t => t.criticality === 'Crítica' || t.criticality === 'Alta').length;
+      const dueOrOverdue = pending.filter(t => getDaysDiffFromToday(t.dueDate) <= 0).length;
+      const inFollowup = pending.filter(t => t.followups && t.followups.length > 0).length;
+
+      document.getElementById('kpiPending').textContent = pending.length;
+      document.getElementById('kpiCritical').textContent = criticalCount;
+      document.getElementById('kpiDue').textContent = dueOrOverdue;
+      document.getElementById('kpiInFollowup').textContent = inFollowup;
+      document.getElementById('kpiCompleted').textContent = completed.length;
+
+      document.getElementById('badgePendingCount').textContent = pending.length;
+      document.getElementById('badgeHistoryCount').textContent = completed.length;
+    }
+
+    function renderPendingTasks() {
+      const tbody = document.getElementById('pendingTableBody');
+      const search = document.getElementById('fPendSearch').value.toLowerCase().trim();
+      const techFilter = document.getElementById('fPendTech').value;
+      const critFilter = document.getElementById('fPendCrit').value;
+      const slaFilter = document.getElementById('fPendSLA').value;
+
+      let list = tasks.filter(t => t.status === 'Pendiente');
+
+      if (search) {
+        list = list.filter(t => {
+          const inFollowups = (t.followups || []).some(f => f.text.toLowerCase().includes(search));
+          return (
+            t.title.toLowerCase().includes(search) ||
+            t.description.toLowerCase().includes(search) ||
+            t.code.toLowerCase().includes(search) ||
+            t.tech.toLowerCase().includes(search) ||
+            inFollowups
+          );
+        });
+      }
+
+      if (techFilter !== 'ALL') list = list.filter(t => t.tech === techFilter);
+      if (critFilter !== 'ALL') list = list.filter(t => t.criticality === critFilter);
+
+      if (slaFilter !== 'ALL') {
+        list = list.filter(t => {
+          const diff = getDaysDiffFromToday(t.dueDate);
+          if (slaFilter === 'OVERDUE') return diff < 0;
+          if (slaFilter === 'TODAY') return diff === 0;
+          if (slaFilter === 'UPCOMING') return diff > 0;
+          return true;
+        });
+      }
+
+      const critWeight = { 'Crítica': 4, 'Alta': 3, 'Media': 2, 'Baja': 1 };
+      list.sort((a, b) => {
+        if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        return (critWeight[b.criticality] || 0) - (critWeight[a.criticality] || 0);
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div style="font-size:2.2rem;">✨</div>
+                <h4>No hay tareas pendientes con estos criterios</h4>
+                <p>Usa el formulario superior para asignar una nueva tarea al equipo.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(t => {
+        const sla = getSlaInfo(t);
+        const totalEvidences = countTotalEvidences(t);
+        const lastFu = t.followups && t.followups.length ? t.followups[t.followups.length - 1] : null;
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:800; color:var(--c-teal-dark);">${escapeHtml(t.code)}</div>
+              <small style="color:var(--c-muted); display:block;">${formatDateDisplay(t.createdAt.slice(0,10))}</small>
+              <span style="font-size:0.7rem; background:#eef3f2; padding:2px 6px; border-radius:4px; color:var(--c-muted);">${escapeHtml(t.category || 'General')}</span>
+            </td>
+            <td class="task-title-cell">
+              <div class="title-text">${escapeHtml(t.title)}</div>
+              <div class="desc-preview" title="${escapeHtml(t.description)}">${escapeHtml(t.description)}</div>
+              ${lastFu ? `
+                <div class="last-followup-box">
+                  <b>Último avance (${formatDateTimeShort(lastFu.date)}):</b> ${escapeHtml(lastFu.text)}
+                </div>
+              ` : ''}
+            </td>
+            <td>
+              <span class="tech-pill">👤 ${escapeHtml(t.tech)}</span>
+            </td>
+            <td>
+              <span class="badge crit-${t.criticality}">${t.criticality}</span>
+            </td>
+            <td>
+              <div style="font-weight:700;">📅 ${formatDateDisplay(t.dueDate)}</div>
+              <span class="sla-badge ${sla.class}">${sla.label}</span>
+            </td>
+            <td>
+              <span class="attach-indicator" onclick="openDetailModal('${t.id}')" title="Clic para abrir expediente y ver evidencias">
+                🔄 ${(t.followups || []).length} seg. | 📎 ${totalEvidences} evid.
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn btn-sm btn-turquoise" onclick="openFollowupModal('${t.id}')">
+                  ➕ Seguimiento
+                </button>
+                <button class="btn btn-sm btn-lime" onclick="openFinalizeModal('${t.id}')">
+                  ✅ Finalizar
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="openDetailModal('${t.id}')">
+                  👁️ Expediente
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderHistoryTasks() {
+      const tbody = document.getElementById('historyTableBody');
+      const search = document.getElementById('fHistSearch').value.toLowerCase().trim();
+      const techFilter = document.getElementById('fHistTech').value;
+      const critFilter = document.getElementById('fHistCrit').value;
+      const catFilter = document.getElementById('fHistCat').value;
+      const slaFilter = document.getElementById('fHistSLA').value;
+      const fromDate = document.getElementById('fHistFrom').value;
+      const toDate = document.getElementById('fHistTo').value;
+
+      let list = tasks.filter(t => t.status === 'Finalizada');
+
+      if (search) {
+        list = list.filter(t => {
+          const closingText = t.closing?.text?.toLowerCase() || '';
+          const inFollowups = (t.followups || []).some(f => f.text.toLowerCase().includes(search));
+          return (
+            t.title.toLowerCase().includes(search) ||
+            t.description.toLowerCase().includes(search) ||
+            closingText.includes(search) ||
+            t.code.toLowerCase().includes(search) ||
+            t.tech.toLowerCase().includes(search) ||
+            inFollowups
+          );
+        });
+      }
+
+      if (techFilter !== 'ALL') list = list.filter(t => t.tech === techFilter);
+      if (critFilter !== 'ALL') list = list.filter(t => t.criticality === critFilter);
+      if (catFilter !== 'ALL') list = list.filter(t => (t.category || 'General') === catFilter);
+
+      if (slaFilter !== 'ALL') {
+        list = list.filter(t => {
+          const closedDay = (t.closing?.date || '').slice(0, 10);
+          const onTime = closedDay <= t.dueDate;
+          return slaFilter === 'ONTIME' ? onTime : !onTime;
+        });
+      }
+
+      if (fromDate) list = list.filter(t => (t.closing?.date || '').slice(0, 10) >= fromDate);
+      if (toDate) list = list.filter(t => (t.closing?.date || '').slice(0, 10) <= toDate);
+
+      list.sort((a, b) => (b.closing?.date || '').localeCompare(a.closing?.date || ''));
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div style="font-size:2.2rem;">🗂️</div>
+                <h4>No se encontraron tareas finalizadas con esos filtros</h4>
+                <p>Las tareas que finalices aparecerán aquí con todo su historial y evidencias.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(t => {
+        const closedDay = (t.closing?.date || '').slice(0, 10);
+        const onTime = closedDay <= t.dueDate;
+        const totalEvidences = countTotalEvidences(t);
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:800; color:var(--c-teal-dark);">${escapeHtml(t.code)}</div>
+              <span style="font-size:0.72rem; background:#eef3f2; padding:2px 6px; border-radius:4px; color:var(--c-muted);">${escapeHtml(t.category || 'General')}</span>
+            </td>
+            <td class="task-title-cell">
+              <div class="title-text">${escapeHtml(t.title)}</div>
+              <div class="last-followup-box" style="background:var(--c-lime-light); border-left-color:var(--c-lime); color:var(--c-dark);">
+                <b>✅ Solución Final:</b> ${escapeHtml(t.closing?.text || '')}
+              </div>
+            </td>
+            <td>
+              <span class="tech-pill">👤 ${escapeHtml(t.tech)}</span>
+            </td>
+            <td>
+              <span class="badge crit-${t.criticality}">${t.criticality}</span>
+            </td>
+            <td>
+              <div style="font-size:0.78rem; color:var(--c-muted);">🎯 Obj: <b>${formatDateDisplay(t.dueDate)}</b></div>
+              <div style="font-size:0.8rem; font-weight:700; color:var(--c-dark);">🏁 Cierre: ${formatDateTimeShort(t.closing?.date)}</div>
+              <span class="sla-badge ${onTime ? 'sla-ok' : 'sla-overdue'}">
+                ${onTime ? '🟢 Cumplida en Plazo' : '🔴 Finalizada con Retraso'}
+              </span>
+            </td>
+            <td>
+              <span class="attach-indicator" onclick="openDetailModal('${t.id}')">
+                🔄 ${(t.followups || []).length} seg. | 📎 ${totalEvidences} evid.
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn btn-sm btn-teal" onclick="openDetailModal('${t.id}')">
+                  🔍 Ver Expediente
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="reopenTask('${t.id}')">
+                  ↩️ Reabrir
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /*************************************************************************
+     * GESTIÓN DE TÉCNICOS
+     *************************************************************************/
+    function renderTechSelectors() {
+      const selects = ['tTech', 'fuAuthor'];
+      selects.forEach(id => {
+        const el = document.getElementById(id);
+        const currentVal = el.value;
+        el.innerHTML = technicians.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+        if (technicians.includes(currentVal)) el.value = currentVal;
+      });
+
+      const filterSelects = ['fPendTech', 'fHistTech'];
+      filterSelects.forEach(id => {
+        const el = document.getElementById(id);
+        const currentVal = el.value || 'ALL';
+        el.innerHTML = `<option value="ALL">Todos los técnicos</option>` +
+          technicians.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+        el.value = currentVal;
+      });
+    }
+
+    function openTechModal() {
+      renderTechListInModal();
+      document.getElementById('modalTechs').classList.add('active');
+    }
+
+    function renderTechListInModal() {
+      const container = document.getElementById('techListContainer');
+      container.innerHTML = technicians.map((t, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f5f8f7; border-radius:7px; border:1px solid var(--c-border);">
+          <span style="font-weight:600;">👤 ${escapeHtml(t)}</span>
+          <button type="button" class="btn btn-sm btn-danger" onclick="removeTechnician(${idx})">Quitar</button>
+        </div>
+      `).join('');
+    }
+
+    function addTechnician(e) {
+      e.preventDefault();
+      const input = document.getElementById('newTechName');
+      const name = input.value.trim();
+      if (!name) return;
+      if (!technicians.includes(name)) {
+        technicians.push(name);
+        renderTechSelectors();
+        renderTechListInModal();
+        saveAndSync();
+        showToast(`👤 Técnico "${name}" agregado`);
+      }
+      input.value = '';
+    }
+
+    function removeTechnician(index) {
+      if (technicians.length <= 1) {
+        alert('Debe existir al menos un técnico en la lista.');
+        return;
+      }
+      technicians.splice(index, 1);
+      renderTechSelectors();
+      renderTechListInModal();
+      saveAndSync();
+    }
+
+    /*************************************************************************
+     * UTILIDADES Y EXPORTACIÓN
+     *************************************************************************/
+    function switchTab(tab) {
+      const isPending = tab === 'pending';
+      document.getElementById('sectionPending').style.display = isPending ? 'block' : 'none';
+      document.getElementById('sectionHistory').style.display = isPending ? 'none' : 'block';
+      document.getElementById('tabBtnPending').classList.toggle('active', isPending);
+      document.getElementById('tabBtnHistory').classList.toggle('active', !isPending);
+    }
+
+    function clearPendingFilters() {
+      document.getElementById('fPendSearch').value = '';
+      document.getElementById('fPendTech').value = 'ALL';
+      document.getElementById('fPendCrit').value = 'ALL';
+      document.getElementById('fPendSLA').value = 'ALL';
+      renderPendingTasks();
+    }
+
+    function clearHistoryFilters() {
+      document.getElementById('fHistSearch').value = '';
+      document.getElementById('fHistTech').value = 'ALL';
+      document.getElementById('fHistCrit').value = 'ALL';
+      document.getElementById('fHistCat').value = 'ALL';
+      document.getElementById('fHistSLA').value = 'ALL';
+      document.getElementById('fHistFrom').value = '';
+      document.getElementById('fHistTo').value = '';
+      renderHistoryTasks();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function countTotalEvidences(task) {
+      let count = (task.initialEvidences || []).length;
+      (task.followups || []).forEach(f => count += (f.evidences || []).length);
+      if (task.closing && task.closing.evidences) count += task.closing.evidences.length;
+      return count;
+    }
+
+    function getDaysDiffFromToday(dueDateStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const [y, m, d] = dueDateStr.split('-').map(Number);
+      const due = new Date(y, m - 1, d);
+      return Math.round((due - today) / (1000 * 60 * 60 * 24));
+    }
+
+    function getSlaInfo(task) {
+      if (task.status === 'Finalizada') {
+        const closedDay = (task.closing?.date || '').slice(0, 10);
+        const onTime = closedDay <= task.dueDate;
+        return onTime
+          ? { class: 'sla-ok', label: '🟢 Cumplida a tiempo' }
+          : { class: 'sla-overdue', label: '🔴 Cerrada fuera de plazo' };
+      }
+
+      const diff = getDaysDiffFromToday(task.dueDate);
+      if (diff < 0) return { class: 'sla-overdue', label: `🔴 Vencida hace ${Math.abs(diff)} día(s)` };
+      if (diff === 0) return { class: 'sla-today', label: '🟠 Vence HOY' };
+      if (diff <= 2) return { class: 'sla-soon', label: `🟡 Vence en ${diff} día(s)` };
+      return { class: 'sla-ok', label: `🟢 En plazo (${diff} días)` };
+    }
+
+    function formatDateDisplay(yyyyMmDd) {
+      if (!yyyyMmDd) return '-';
+      const parts = yyyyMmDd.split('-');
+      if (parts.length !== 3) return yyyyMmDd;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function formatDateTimeDisplay(isoStr) {
+      if (!isoStr) return '-';
+      const d = new Date(isoStr);
+      return d.toLocaleString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function formatDateTimeShort(isoStr) {
+      if (!isoStr) return '-';
+      const d = new Date(isoStr);
+      return d.toLocaleString('es-CO', {
+        day: '2-digit', month: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3400);
+    }
+
+    function exportToCSV() {
+      if (!tasks.length) {
+        alert('No hay tareas registradas para exportar.');
+        return;
+      }
+
+      const headers = [
+        'Codigo', 'Estado', 'Titulo', 'Tecnico_Asignado', 'Categoria',
+        'Criticidad', 'Fecha_Creacion', 'Fecha_Objetivo', 'Cantidad_Seguimientos',
+        'Ultimo_Avance', 'Fecha_Cierre', 'Solucion_Final', 'Total_Evidencias'
+      ];
+
+      const rows = tasks.map(t => {
+        const lastFu = t.followups && t.followups.length ? t.followups[t.followups.length - 1].text : '';
+        return [
+          t.code,
+          t.status,
+          t.title,
+          t.tech,
+          t.category || 'General',
+          t.criticality,
+          formatDateTimeDisplay(t.createdAt),
+          t.dueDate,
+          (t.followups || []).length,
+          lastFu,
+          t.closing ? formatDateTimeDisplay(t.closing.date) : '',
+          t.closing ? t.closing.text : '',
+          countTotalEvidences(t)
+        ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(';');
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Reporte_Tareas_TICS_ITS_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📊 Reporte CSV descargado para Excel');
+    }
+
+    function exportBackupJSON() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        technicians,
+        tasks
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Backup_Tareas_ITS_TICS_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('💾 Respaldo JSON descargado');
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.tasks)) tasks = data.tasks;
+          if (Array.isArray(data.technicians)) {
+            technicians = data.technicians;
+            renderTechSelectors();
+          }
+          renderAll();
+          saveAndSync();
+          showToast('📂 Respaldo restaurado y sincronizado en la nube');
+        } catch (err) {
+          alert('El archivo JSON no tiene un formato válido.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+  </script>
+</body>
+</html>
